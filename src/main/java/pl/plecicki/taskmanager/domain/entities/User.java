@@ -8,10 +8,17 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "USERS")
 public class User {
+
+    public User(Long userId, String name, String surname, String username, String password) {
+        this.userId = userId;
+        this.name = name;
+        this.surname = surname;
+        this.username = username;
+        this.password = password;
+    }
 
     @Id
     @GeneratedValue
