@@ -11,4 +11,8 @@ public class UserDto {
     private String surname;
     private String username;
     private String password;
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
