@@ -15,6 +15,14 @@ import java.util.List;
 @Entity(name = "TASKS")
 public class Task {
 
+    public Task(Long taskId, String title, String description, TaskStatus taskStatus, LocalDate deadline) {
+        this.taskId = taskId;
+        this.title = title;
+        this.description = description;
+        this.taskStatus = taskStatus;
+        this.deadline = deadline;
+    }
+
     @Id
     @GeneratedValue
     @Column(nullable = false, unique = true, name = "TASK_ID")

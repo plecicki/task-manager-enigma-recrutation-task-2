@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import pl.plecicki.taskmanager.domain.dtos.UserDto;
+import pl.plecicki.taskmanager.domain.entities.JoinUserTask;
+import pl.plecicki.taskmanager.domain.entities.Task;
 import pl.plecicki.taskmanager.domain.entities.User;
 import pl.plecicki.taskmanager.exceptions.UserDoesntExist;
 import pl.plecicki.taskmanager.mappers.UserMapper;
+import pl.plecicki.taskmanager.repositories.JoinUserTaskRepository;
+import pl.plecicki.taskmanager.repositories.TaskRepository;
 import pl.plecicki.taskmanager.repositories.UserRepository;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,8 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
+    private final JoinUserTaskRepository joinUserTaskRepository;
     private final UserMapper userMapper;
 
     public List<User> findUsers(String name, String surname) throws UserDoesntExist {
@@ -45,5 +50,12 @@ public class UserService {
     public void deleteUser(Long userId) throws UserDoesntExist {
         if (!userRepository.existsById(userId)) throw new UserDoesntExist();
         userRepository.deleteById(userId);
+    }
+
+    public List<Task> getUsersTasks(Long userId) throws UserDoesntExist {
+        if (!userRepository.existsById(userId)) throw new UserDoesntExist();
+        return joinUserTaskRepository.findByUser(userRepository.findByUserId(userId)).stream()
+                .map(JoinUserTask::getTask)
+                .collect(Collectors.toList());
     }
 }
