@@ -40,4 +40,11 @@ public class GlobalHttpExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleUserIsntAssignToThisTask(UserIsntAssignToThisTask exception) {
         return new ResponseEntity<>("User isn't assigned to this task", HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(AtLeastOneOfUsersIdsIsWrongAndTaskWasCreatedWithoutThem.class)
+    public ResponseEntity<Object> handleAtLeastOneOfUsersIdsIsWrongAndTaskWasCreatedWithoutThem
+            (AtLeastOneOfUsersIdsIsWrongAndTaskWasCreatedWithoutThem exception) {
+        return new ResponseEntity<>("At least one of of users ids is wrong and task was created without them",
+                HttpStatus.NO_CONTENT);
+    }
 }

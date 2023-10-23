@@ -2,6 +2,7 @@ package pl.plecicki.taskmanager.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.plecicki.taskmanager.domain.dtos.EditTaskDto;
 import pl.plecicki.taskmanager.domain.dtos.TaskDto;
 import pl.plecicki.taskmanager.domain.entities.JoinUserTask;
@@ -26,8 +27,12 @@ public class TaskService {
     private final JoinUserTaskRepository joinUserTaskRepository;
     private final TaskMapper taskMapper;
 
-    public List<Task> findTasks(String title, String description, TaskStatus taskStatus, LocalDate deadline)
+    public List<Task> findTasks(TaskDto taskDto)
             throws TaskDoesntExists {
+        String title = taskDto.getTitle();
+        String description = taskDto.getDescription();
+        TaskStatus taskStatus = taskDto.getTaskStatus();
+        LocalDate deadline = taskDto.getDeadline();
         List<Task> tasks = taskRepository.findAll();
         if (title != null && !"".equals(title)) {
             tasks = tasks.stream()
@@ -46,7 +51,7 @@ public class TaskService {
         }
         if (deadline != null) {
             tasks = tasks.stream()
-                    .filter(task -> task.getDeadline() == deadline)
+                    .filter(task -> task.getDeadline().equals(deadline))
                     .toList();
         }
         if (tasks.isEmpty()) throw new TaskDoesntExists();
@@ -57,20 +62,26 @@ public class TaskService {
         return taskRepository.save(taskMapper.mapTaskDtoToTask(taskDto));
     }
 
-    public Task addTaskWithAssignedUsers(TaskDto taskDto, List<Long> userIds) throws UserDoesntExistAndUnassignedTaskWasCreated {
+    public Task addTaskWithAssignedUsers(TaskDto taskDto, List<Long> userIds)
+            throws UserDoesntExistAndUnassignedTaskWasCreated, AtLeastOneOfUsersIdsIsWrongAndTaskWasCreatedWithoutThem {
         Task savedTask =  taskRepository.save(taskMapper.mapTaskDtoToTask(taskDto));
         boolean isAssignedAtLeastOneUser = false;
+        boolean isAnyNotExistingUser = false;
         for (Long userId : userIds) {
             if (userRepository.existsById(userId)) {
                 User assignedUser = userRepository.findByUserId(userId);
                 joinUserTaskRepository.save(new JoinUserTask(0L,assignedUser,savedTask));
                 isAssignedAtLeastOneUser = true;
+            } else {
+                isAnyNotExistingUser = true;
             }
         }
-        if (isAssignedAtLeastOneUser) {
+        if (isAssignedAtLeastOneUser && !isAnyNotExistingUser) {
             return savedTask;
+        } else if (!isAssignedAtLeastOneUser) {
+            throw new UserDoesntExistAndUnassignedTaskWasCreated();
         }
-        throw new UserDoesntExistAndUnassignedTaskWasCreated();
+        throw new AtLeastOneOfUsersIdsIsWrongAndTaskWasCreatedWithoutThem();
     }
 
     public Task assignUserToTask(Long taskId, Long userId)
@@ -82,9 +93,11 @@ public class TaskService {
         if (joinUserTaskRepository.existsByUserAndTask(assignedUser, assignedTask))
             throw new UserHasBeenAssignedBeforeToThisTask();
         joinUserTaskRepository.save(new JoinUserTask(0L, assignedUser, assignedTask));
+        assignedTask.setJoinUserTasks(null);
         return assignedTask;
     }
 
+    @Transactional
     public Task unassignUserFromTask(Long taskId, Long userId)
             throws UserDoesntExist, TaskDoesntExists, UserIsntAssignToThisTask {
         if (!userRepository.existsById(userId)) throw new UserDoesntExist();
@@ -107,6 +120,7 @@ public class TaskService {
         Task task = taskRepository.findByTaskId(taskId);
         List<JoinUserTask> joinUserTasks = joinUserTaskRepository.findByTask(task);
         joinUserTaskRepository.deleteAll(joinUserTasks);
+        taskRepository.delete(task);
     }
 
     public void changeStatus(Long taskId, TaskStatus taskStatus)

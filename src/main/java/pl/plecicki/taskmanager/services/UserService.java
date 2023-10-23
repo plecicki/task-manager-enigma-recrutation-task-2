@@ -42,8 +42,8 @@ public class UserService {
     }
 
     public User addUser(UserDto userDto) {
-        String decodedPassword = BCrypt.hashpw(userDto.getPassword(), BCrypt.gensalt(12));
-        userDto.setPassword(decodedPassword);
+        String hashedPassword = BCrypt.hashpw(userDto.getPassword(), BCrypt.gensalt(12));
+        userDto.setPassword(hashedPassword);
         return userRepository.save(userMapper.userDtoToUser(userDto));
     }
 

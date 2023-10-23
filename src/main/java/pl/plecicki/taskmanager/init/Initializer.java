@@ -17,6 +17,8 @@ public class Initializer {
     @PostConstruct
     public void init() throws IOException {
         if (userRepository.findAll().isEmpty()) {
+            //Login: user
+            //Password: password
             userRepository.save(new User(0L,"Init_name", "Init_surname", "user",
                     "$2a$12$pRqgKhtX9rxlULLRKuKehO4EYZfUgcb4v7wk.QAXNOSxfPmSMC16W"));
         }

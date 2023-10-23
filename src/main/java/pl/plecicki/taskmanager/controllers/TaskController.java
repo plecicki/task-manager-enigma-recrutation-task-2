@@ -24,22 +24,18 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping("/filter")
-    public ResponseEntity<List<Task>> findTasks(
-            @RequestParam String title,
-            @RequestParam String description,
-            @RequestParam TaskStatus taskStatus,
-            @RequestParam LocalDate deadline) throws TaskDoesntExists {
-        return ResponseEntity.ok(taskService.findTasks(title, description, taskStatus, deadline));
+    public ResponseEntity<List<Task>> findTasks(@RequestBody TaskDto taskDto) throws TaskDoesntExists {
+        return ResponseEntity.ok(taskService.findTasks(taskDto));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, path = "/unassigned")
-    public ResponseEntity<Task> addTaskWithoutAssignedUser(TaskDto taskDto) {
+    public ResponseEntity<Task> addTaskWithoutAssignedUser(@RequestBody TaskDto taskDto) {
         return ResponseEntity.ok(taskService.addTaskWithoutAssignedUser(taskDto));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, path = "/assigned")
-    public ResponseEntity<Task> addTaskWithAssignedUsers(CreateAssignedTaskDto createAssignedTaskDto)
-            throws UserDoesntExistAndUnassignedTaskWasCreated {
+    public ResponseEntity<Task> addTaskWithAssignedUsers(@RequestBody CreateAssignedTaskDto createAssignedTaskDto)
+            throws UserDoesntExistAndUnassignedTaskWasCreated, AtLeastOneOfUsersIdsIsWrongAndTaskWasCreatedWithoutThem {
         TaskDto taskDto = createAssignedTaskDto.getTaskDto();
         List<Long> userIds = createAssignedTaskDto.getUserIds();
         return ResponseEntity.ok(taskService.addTaskWithAssignedUsers(taskDto, userIds));
@@ -58,7 +54,7 @@ public class TaskController {
     }
 
     @PutMapping
-    public ResponseEntity<Task> editTask(EditTaskDto editTaskDto) throws TaskDoesntExists {
+    public ResponseEntity<Task> editTask(@RequestBody EditTaskDto editTaskDto) throws TaskDoesntExists {
         return ResponseEntity.ok(taskService.editTask(editTaskDto));
     }
 
@@ -69,9 +65,10 @@ public class TaskController {
     }
 
     @PostMapping(value = "/{taskId}/status")
-    public ResponseEntity<Void> changeStatus(@PathVariable Long taskId, @RequestParam TaskStatus taskStatus)
+    @ResponseBody
+    public ResponseEntity<Void> changeStatus(@PathVariable Long taskId, @RequestParam TaskStatus status)
             throws TaskDoesntExists, ThisStatusHasBeenSetBefore {
-        taskService.changeStatus(taskId, taskStatus);
+        taskService.changeStatus(taskId, status);
         return ResponseEntity.ok().build();
     }
 }

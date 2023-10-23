@@ -2,6 +2,7 @@ package pl.plecicki.taskmanager.repositories;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import pl.plecicki.taskmanager.domain.entities.JoinUserTask;
 import pl.plecicki.taskmanager.domain.entities.Task;
 import pl.plecicki.taskmanager.domain.entities.User;
@@ -13,7 +14,7 @@ public interface JoinUserTaskRepository extends CrudRepository<JoinUserTask, Lon
 
     List<JoinUserTask> findByUser(User user);
     List<JoinUserTask> findByTask(Task task);
-    void deleteByTask(Task task);
     boolean existsByUserAndTask(User user, Task task);
-    Task deleteByTaskAndUser(Task task, User user);
+    @Transactional
+    void deleteByTaskAndUser(Task task, User user);
 }
