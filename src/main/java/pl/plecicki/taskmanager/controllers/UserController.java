@@ -10,7 +10,6 @@ import pl.plecicki.taskmanager.domain.entities.User;
 import pl.plecicki.taskmanager.exceptions.UserDoesntExist;
 import pl.plecicki.taskmanager.services.UserService;
 
-import java.awt.*;
 import java.util.List;
 
 @RestController
@@ -37,7 +36,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/{userId}")
+    @GetMapping(value = "/{userId}/tasks")
     public ResponseEntity<List<Task>> getUsersTasks(@PathVariable Long userId) throws UserDoesntExist {
         return ResponseEntity.ok(userService.getUsersTasks(userId));
     }

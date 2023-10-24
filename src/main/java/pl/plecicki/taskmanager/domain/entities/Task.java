@@ -1,6 +1,8 @@
 package pl.plecicki.taskmanager.domain.entities;
 
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,5 +43,6 @@ public class Task {
     private LocalDate deadline;
 
     @OneToMany(mappedBy = "task")
+    @JsonBackReference
     private List<JoinUserTask> joinUserTasks;
 }

@@ -1,5 +1,6 @@
 package pl.plecicki.taskmanager.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -37,5 +38,6 @@ public class User {
     private String password;
 
     @OneToMany(mappedBy = "user")
+    @JsonBackReference
     private List<JoinUserTask> joinUserTasks;
 }
